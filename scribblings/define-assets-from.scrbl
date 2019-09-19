@@ -23,7 +23,7 @@ involve providing image assets.
    @item{Defines an identifier based on the PNG name}
    @item{Provides the identifier}
    @item{Provides documentation in a submodule called @racket[srcdoc], suitable for inclusion with Racket's in-source documentation
-         system (i.e. @racket[include-extracted])}
+         system (i.e. @racket[scribble/extract]'s @racket[include-extracted])}
   } 
 
   For example, in some file, try:
@@ -43,6 +43,7 @@ involve providing image assets.
 The below documentation was generated with
 
 @codeblock{
+  (require scribble/extract)
   (include-extracted "../demo/assets.rkt")
 }
 
