@@ -1,3 +1,4 @@
 define-assets-from
 ==================
-README text here.
+
+See the [Docs](https://docs.racket-lang.org/define-assets-from@define-assets-from/index.html)
