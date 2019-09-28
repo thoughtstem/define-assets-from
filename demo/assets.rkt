@@ -10,4 +10,7 @@
 
   (check-pred
     image?
-    (above earth earth)))
+    (above earth earth))
+  
+  )
+  
