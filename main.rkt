@@ -4,9 +4,11 @@
          
          define-assets-from 
          doc-all
+         doc-asset
          also-for-asset-docs)
 
 (require (for-syntax 2htdp/image (only-in scribble/manual image para))
+         (only-in scribble/manual defthing)
          (for-syntax racket)
          syntax/parse/define)
 
@@ -18,8 +20,11 @@
    (filter (curryr string-suffix? ".png")
            (map ~a (directory-list path)))))
 
+(define-syntax-rule (doc-asset docable)
+  (defthing docable image?
+            docable))
 
-(define (module-ids module-path-sym)
+(define-for-syntax (module-ids module-path-sym)
   (define-values (ids sts) 
     (module->exports module-path-sym))
   (map first (rest (first ids))))
@@ -28,22 +33,29 @@
 (define-syntax (doc-all stx)
   (syntax-parse stx
     [(_ path)
-    #`(let ()
-        (define ids (module-ids (syntax->datum #'path)))
-        (define stuffs 
-          (map 
-            (lambda(i) (dynamic-require (syntax->datum #'path) i))
-            ids))
-        stuffs )])) 
+    (define ids (module-ids (syntax->datum #'path)))
+    (define all-docs
+      (map 
+        (lambda (i) `(doc-asset ,i))
+        ids))
+    (datum->syntax stx
+      `(list
+         ,@all-docs))]))
 
-
+;This macro got ugly.
+;  Please prettify it with syntax-parse before adding more grossness to it!
 (define-syntax (define-assets-from stx)
   (define root (apply build-path (reverse
                                   (rest (reverse (explode-path (syntax-source stx)))))))
 
-  (define path (second (syntax->datum stx)))
+  (define stuff (syntax->datum stx))   
+  (define path (second stuff))
 
   (define ids (get-png-names-from (build-path root path)))
+
+  (define extra-docs 
+    (make-hash (map (curry apply cons) 
+                    (drop stuff 2))))
 
   (define (define-asset i)
     (define p (build-path root path (~a i ".png") ))
@@ -66,9 +78,15 @@
     `(begin
        (provide ,i)
        (define ,i
-         @defthing[,i image?]{
-           @para[,(string-titlecase (string-replace (~a i) "-" " "))]{ Image }
-           @image[,p]})))
+          ,(list 
+              'list
+               `(para ,(string-titlecase (string-replace (~a i) "-" " " ))
+                      " Image")
+               `(image ,p)
+                (hash-ref extra-docs 'for-all-assets '(list))
+                (hash-ref extra-docs i '(list))
+               )
+          )))
 
   (datum->syntax stx
    `(begin

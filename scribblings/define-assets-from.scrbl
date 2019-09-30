@@ -6,9 +6,10 @@
 @title{define-assets-from}
 @author{thoughtstem}
 
-@(require define-assets-from)
 
 @defmodule[define-assets-from]
+
+@(require define-assets-from)
 
 This module makes it easy to turn PNG files in a directory
 into provided identifiers that correspond to @racket[image?] values.
@@ -16,7 +17,7 @@ into provided identifiers that correspond to @racket[image?] values.
 It eases the burden of creating and maintaining Racket packages that
 involve providing image assets.
 
-@defform[(define-assets-from path)
+@defform[(define-assets-from path [id extra-meta-data] ...)
          #:contracts ([path path-string?])]{
   Looks in the relative @racket[path] for any PNG files.
   For any found, it: 
@@ -41,6 +42,17 @@ involve providing image assets.
   Put some a PNG file in a folder called @racket[assets].
   
   See the demo in this package. 
+
+  You can add extra documentation for individual assets by passing in tuples after the folder name:
+
+  @codeblock{
+    #lang racket
+    (require define-assets-from)
+
+    (define-assets-from "assets" 
+                         (for-all-assets (para "When using this asset, please credit Thomas Edison."))
+                         (earth (para "Additionally credit Thomas Edison's cat for this image.  It was a collaboration.")))
+  }
 }
 
 @section{Generating Docs}
@@ -55,26 +67,35 @@ The below documentation was generated with @racket[srcdoc]'s @racket[include-ext
 
 @(include-extracted "../demo/assets.rkt")
 
-@subsection{New Way}
+It works, but only if you're extracting from the same module where the original assets are defined.
 
-Using @racket[define-asset-doc] in a module creates a submodule that is its Asset Doc Module.  For every module that supplies assets, there is a associated documentation that describes (for example) how that asset looks, its type, its creator, its license, etc.  It is stored as a value that is suitable for direct inclusion in a Scribble document.
+We wanted a way that allowed people to @racket[require] and @racket[provide] assets -- possibly with renames -- into arbitrary other modules.  Those higher-level modules, then, do not contain the original documentation.
+
+So...
+
+@subsection{The Prefered Way}
+
+Using @racket[define-asset-doc] in a module creates a submodule that is its Asset Doc Module.  In other words, the main module supplies the assets; but the sub Asset Doc Module has associated documentation.  Currently the documentation just contains the orinal image and its name, but it would (for example) also describe how that asset looks, its type, its creator, its license, etc.  It is stored as a value that is suitable for inclusion in a Scribble document when wrapped in @racket[doc-asset].
 
 Use those identifiers directly in scribble doc, simply by requiring the Asset Doc Module first.
 
-@(require (submod define-assets-from/demo/assets asset-docs))
 @nested[#:style 'inset]{
 @codeblock{
   (require scribble/extract)
-  (require (submod define-assets-from/demo/assets asset-docs))
+  (require 
+    define-assets-from
+    (submod define-assets-from/demo/assets asset-docs))
 
-  earth
+  (doc earth)
 }
 }
 
 This gives:
 
+@(require 
+   (submod define-assets-from/demo/assets asset-docs))
 @nested[#:style 'inset]{
-@earth
+  @(doc-asset earth)
 }
 
 If you want to include all the assets in an Asset Doc Module without knowing their names, you can use @racket[doc-all]
@@ -162,7 +183,7 @@ Gives the doc for a known identifier -- as if its source had been @racket[demo2]
 
 @(require (only-in (submod define-assets-from/demo2/assets asset-docs) logo))
 @nested[#:style 'inset]{
-  @logo
+  @(doc-asset logo)
 }
 
 Likewise the asset itself can be accessed from the main module:
