@@ -120,6 +120,19 @@
 
 
 (define-for-syntax (generate-require-provides replacements original)
+  (define flattened (flatten original))
+  (for ([r replacements])
+    (define (similar? s)
+      (string-contains? s (~a r)))
+    (when (not (member r flattened))
+      (define similars
+        (filter similar?  (map ~a (remove-duplicates flattened))))
+      (error 
+        (~a "The module \"" r "\" was not found in the (also-for-asset-docs ...) block.\n"
+            (if (not (empty? similars))
+              (~a "Suggestion(s): " similars)
+              "")))))
+
   (define (do-replacement rep tree)
     (if (eq? rep tree)
       `(submod ,rep asset-docs)
