@@ -60,7 +60,8 @@
   (define (define-asset i)
     (define p (build-path root path (~a i ".png") ))
     `(begin
-       (require (for-doc scribble/manual))
+       (require (for-doc scribble/manual)
+                syntax/parse/define)
        (provide
          ;Use srcdoc for compatibility with include-extracted-assets
         (thing-doc ,i image?
@@ -68,9 +69,14 @@
                      @image[,p]}
                    ))
 
+       #;
        (define ,i
          (bitmap/file ,p))
        
+       (define-syntax (,i stx)
+         (syntax-parse stx
+           [val:identifier 
+             #`(bitmap/file ,p)])) 
        ))
 
   (define (define-asset-doc i)
