@@ -3,6 +3,7 @@
 (provide define-icons-from
          
          define-assets-from 
+         on-asset-use
          doc-all
          doc-asset
          also-for-asset-docs)
@@ -42,6 +43,8 @@
       `(list
          ,@all-docs))]))
 
+(define on-asset-use (make-parameter (lambda (x) (void))))
+
 ;This macro got ugly.
 ;  Please prettify it with syntax-parse before adding more grossness to it!
 (define-syntax (define-assets-from stx)
@@ -63,7 +66,10 @@
        (require (for-doc scribble/manual)
                 syntax/parse/define)
        (provide
-         ;Use srcdoc for compatibility with include-extracted-assets
+         ,i
+         ;Previously for compatibility with include-extracted-assets (srcdoc)
+         ;But that was deprecated a while back.  And now we need to speed things up.  Now that each asset is an identifier macro, we should avoid using them at compile time, or we end up with long loadtimes (e.g. #lang cutscene was taking forever)
+         #;
         (thing-doc ,i image?
                    @{@para[,(string-titlecase (string-replace (~a i) "-" " "))]{ Image}
                      @image[,p]}
@@ -76,7 +82,9 @@
        (define-syntax (,i stx)
          (syntax-parse stx
            [val:identifier 
-             #`(bitmap/file ,p)])) 
+             #`(begin 
+                 ((on-asset-use) ,p)
+                 (bitmap/file ,p))])) 
        ))
 
   (define (define-asset-doc i)
