@@ -31,9 +31,7 @@ with regard to crediting the original artist.
   @itemize{
    @item{Defines an identifier based on the PNG name}
    @item{Provides the identifier}
-   @item{Provides documentation in a submodule called @racket[srcdoc], suitable for inclusion with Racket's in-source documentation
-         system (i.e. @racket[scribble/extract]'s @racket[include-extracted])}
-  @item{Provides documentation in a submodule called @racket[asset-docs], where (unlike @racket[srcdoc]) each identifer is provided out as a list with the original identifier (as a symbol), the type of asset (currently only @racket[image?]) and the appropriate way to document the image.}
+   @item{Provides documentation in a submodule called @racket[asset-docs], where (unlike @racket[srcdoc]) each identifer is provided out as a list with the original identifier (as a symbol), the type of asset (currently only @racket[image?]) and the appropriate way to document the image.}
   } 
 
   For example, in some file, try:

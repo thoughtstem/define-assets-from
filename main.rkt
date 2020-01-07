@@ -1,8 +1,6 @@
 #lang at-exp racket
 
-(provide define-icons-from
-         
-         define-assets-from 
+(provide define-assets-from 
          on-asset-use
          doc-all
          doc-asset
@@ -63,8 +61,7 @@
   (define (define-asset i)
     (define p (build-path root path (~a i ".png") ))
     `(begin
-       (require (for-doc scribble/manual)
-                syntax/parse/define)
+       (require syntax/parse/define)
        (provide
          ,i
          ;Previously for compatibility with include-extracted-assets (srcdoc)
@@ -104,8 +101,7 @@
 
   (datum->syntax stx
    `(begin
-      (require 2htdp/image 
-               scribble/srcdoc)
+      (require 2htdp/image )
       
       ,@(map define-asset ids)
       
@@ -157,38 +153,6 @@
   (foldl do-replacement
          original
          replacements))
-
-(define-syntax (define-icons-from stx)
-  (define root (apply build-path (reverse
-                                  (rest (reverse (explode-path (syntax-source stx)))))))
-
-  (define path (second (syntax->datum stx)))
-
-  (define ids (map (compose string->symbol
-                            (curryr ~a "-icon"))
-                   (get-png-names-from (build-path root path))))
-
-  (define (define-asset i)
-    (define i-no-icon (string-replace (~a i) "-icon" "" #:all? #f))
-    (define p (build-path root path (~a i-no-icon ".png") ))
-    `(begin
-       (require (for-doc scribble/manual))
-       (provide
-        (thing-doc ,i image?
-                   @{@para[,(string-titlecase (string-replace (~a i) "-" " "))]{ Image}
-                     @image[,p]}
-                   ))
-
-       
-       (define ,i
-         (bitmap/file ,p))))
-
-  (datum->syntax stx
-   `(begin
-      (require 2htdp/image scribble/srcdoc)
-
-      
-      ,@(map define-asset ids))))
 
 
 
