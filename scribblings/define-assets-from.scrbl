@@ -65,34 +65,15 @@ with regard to crediting the original artist.
 
 @section{Generating Docs}
 
-@subsection{The Non-Preferred Way}
-
-The below documentation was generated with @racket[srcdoc]'s @racket[include-extracted].
-
-@codeblock{
-  (require scribble/extract)
-  (include-extracted "../demo/assets.rkt")
-}
-
-@(include-extracted "../demo/assets.rkt")
-
-It works, but only if you're extracting from the same module where the original assets are defined.
-
-We wanted a way that allowed people to @racket[require] and @racket[provide] assets -- possibly with renames -- into arbitrary other modules.  Those higher-level modules, then, do not contain the original documentation.
-
-So...
-
-@subsection{The Prefered Way}
-
 Using @racket[define-assets-from] in a module creates a submodule that is its Asset Doc Module.  In other words, the main module supplies the assets; but the sub Asset Doc Module has associated documentation.  By default the documentation just contains the original image and its name, but it can (for example) also describe how that asset looks, its type, its creator, its license, links to the artist's homepage, etc.  These must be values that are suitable for inclusion in a Scribble document, and can be converted to a @racket[defthing] by using @racket[doc-asset] or @racket[doc-all].
 
 @(require (submod define-assets-from/demo/assets asset-docs))
+
 @defform[(doc-asset id)]{
   The @racket[id] should be something that comes from a @racket[asset-docs] submodule (which, remember, is created for you automatically if you used @racket[define-assets-from])
    
   @nested[#:style 'inset]{
     @codeblock{
-      (require scribble/extract)
       (require define-assets-from)
       (require (submod define-assets-from/demo/assets asset-docs))
 
